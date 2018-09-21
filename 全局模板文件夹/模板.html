@@ -1,0 +1,136 @@
+{% load staticfiles %}
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>{% block 页面标题 %}{% endblock %}</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'Bootstrap/css/bootstrap.css' %}" >
+        <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.css">
+        {% block 引用样式 %}{% endblock %}
+        <style type="text/css">
+            textarea::-webkit-input-placeholder {
+                text-align: center;
+                padding-top:0.6em;
+                font-size: 2em;
+            }
+            body {
+                margin-top: 80px!important;
+                line-height: 2em;
+            }
+            a:hover {
+                color:red;
+            }
+            i.active {
+                color:red !important;
+            }
+            #滑稽:hover {
+                transform: rotate(-360deg);
+                transition: transform 2s;
+            }
+            div.django-ckeditor-widget{
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body> 
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+            <a style="font-family: 'Microsoft YaHei';font-style: oblique;" class="navbar-brand" href="/"><img id="滑稽" src="{% static '滑稽.png' %}" height="32" width="32">&nbsp;薛志超的网站</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item {% block 选中导航栏首页 %}{% endblock %}">
+                        <a class="nav-link" href="/"><i class="fa fa-flag" style="font-size:1.2em"></i> 首页 </a>
+                    </li>
+                    <li class="nav-item {% block 选中导航栏博客 %}{% endblock %}">
+                        <a class="nav-link" href="{% url '博客链接列表' %}">
+                        <i class="fa fa-pencil-square-o" style="font-size:1.2em"></i> 博客 </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa fa-address-card-o" style="font-size:1.2em"></i> 欢迎：{{ user.username }} </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            {% if user.is_staff %}
+                                <a class="dropdown-item" href="{% url 'admin:index' %}">后台管理</a>
+                            {% endif %}
+                            <a class="dropdown-item" href="{% url '个人信息' %}">个人信息</a>
+                            <a class="dropdown-item" href="{% url '退出登录' %}">退出登录</a>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="modal" data-target="#登录框">
+                        <i class="fa fa fa-address-card-o" style="font-size:1.2em"></i> 登录 </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url '注册' %}">
+                        <i class="fa fa-address-book-o" style="font-size:1.2em"></i> 注册 </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>     
+        </nav>
+
+        <div class="modal fade" id="登录框" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-center">
+                        <h4 class="modal-title text-center"><img id="滑稽" src="{% static '滑稽.png' %}" height="24" width="24">登录我的博客</h4>
+                    </div>
+                    <form id="登录表单" class="col-12" action="{% url '登陆框登录' %}" method="POST">
+                        <div style="padding: 0.5em 0.5em" class="modal-body justify-content-center">
+                            {% csrf_token %}
+                            {% for 表单 in 登录表单 %}
+                            <div class="form-group">
+                                <label for="{{ 表单.label }}">{{表单.label}}：</label>
+                                {{ 表单 }}
+                                <p class='text-danger'>{{ 表单.errors.as_text }}</p>
+                            </div>
+                            {% endfor %}
+                            <p id="登录错误信息" class="text-danger pull-left"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="{% url '忘记密码' %}">
+                                <button type="button" class="btn btn-warning">忘记密码</button>
+                            </a>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                            <button type="submit" class="btn btn-primary">登录</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% block 内容 %}{% endblock %}
+
+        <script type="text/javascript" src="{% static 'jquery-3.3.1.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'popper.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'Bootstrap/js/bootstrap.min.js' %}"></script>
+        <script type="text/javascript">
+            $('#登录表单').submit(function(){
+                $.ajax({
+                    url: '{% url '登陆框登录' %}',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    cache: false,
+                    success:  function(data){
+                        if(data['状态']=='成功'){
+                            window.location.reload();
+                        }else{
+                            $('#登录错误信息').text('用户名或密码错误');
+                        }
+                    }
+                });
+            return false;
+            });
+        </script>
+
+        {% block 脚本扩展 %}{% endblock %}
+
+    </body>
+</html>

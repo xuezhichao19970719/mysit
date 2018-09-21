@@ -1,0 +1,263 @@
+{% extends '模板.html' %}
+
+
+{% block 页面标题 %}
+    {{ 博客内容.标题方法 }}
+{% endblock %}
+
+
+{% load staticfiles %}
+{% load 点赞按钮状态 %}
+
+
+{% block 引用样式 %}
+        <script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
+        <script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
+{% endblock %}
+
+
+{% block 选中导航栏博客 %}active bg-info{% endblock %}
+
+
+{% block 内容 %}
+<div class="container">
+    <div class="row">
+        <div style="margin: 0em 0em 1em 0em" class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="margin: 0em" class="text-center">
+                        {{ 博客内容.标题方法 }}
+                    </h3>
+                </div>
+                <div  style="padding : 0.5em 1em;text-indent: 2em"  class="card-block">
+                    {{ 博客内容.内容方法|safe }}
+                </div>
+                <div class="card-footer text-muted">
+                    <div style="float:left;">
+                        <span style="float:left;">
+                            <p  style="margin : 0.1em">
+                                <i class="fa">&#xf007</i>&nbsp;：{{ 博客内容.作者方法.昵称 }}
+                            </p>
+                            <p  style="margin : 0.1em">
+                                <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;：
+                                <a href='{% url '博客类型' 博客内容.类型方法.pk %}'>
+                                    {{ 博客内容.类型方法 }}
+                                </a>&nbsp;(类型)
+                            </p>
+                        </span>
+                        <span style="float:left">
+                            <p  style="margin : 0.1em;text-indent: 1em"><i class="fa">&#xf073</i>&nbsp;：{{ 博客内容.创建时间方法|date:'y-m-d H:i:s' }}
+                            </p>
+                            <p  style="margin : 0.1em;text-indent: 1em">
+                                <i class="fa fa-line-chart"></i>&nbsp;：{{ 博客内容.阅读计数方法 }}次（阅读量）
+                            </p>
+                        </span>
+                        <span style="float:left">
+                            <p  id="评论数" style="margin : 0.1em;text-indent: 1em">
+                                <i class="fa fa-bar-chart"></i>&nbsp;：{{ 博客内容.评论计数方法 }}次（评论数）
+                            </p>
+                            <p  id="评论数" style="margin : 0.1em;text-indent: 1em">
+                                <span style="cursor:pointer" onclick="点赞与取消(this, '博客类', {{ 博客内容.pk }})">
+                                    <i class="fa fa-thumbs-o-up  {% 点赞按钮状态函数 博客内容 %}" style="font-size:1.3em;color:green">
+                                    </i>
+                                    &nbsp;：<span class='点赞数'>{{ 博客内容.被点赞数方法}}</span>次（点赞数）
+                                </span>
+                            </p>
+                        </span>
+                    </div>
+                    <div class="更多博客" style="float:right">
+                        <p style="margin: 0.1em;text-indent: 1em">
+                            上一篇：
+                            {% if 上一篇博客 %}
+                                <a href="{% url '博客内容' 上一篇博客.pk %}">{{ 上一篇博客.标题方法 }}</a>
+                            {% else %}
+                                无上一篇博客
+                            {% endif %}
+                        </p>
+                        <p style="margin: 0.1em;text-indent: 1em">
+                            下一篇：
+                            {% if 下一篇博客 %}
+                                <a href="{% url '博客内容' 下一篇博客.pk %}">{{ 下一篇博客.标题方法 }}</a>
+                            {% else %}
+                                无下一篇博客
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div style="margin: 0em 0em 1em 0em" class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 style="float:left;margin: 0.2em 1em 0.2em 0em">评论</h4>
+                    <div style="float:right">
+                        {% if user.is_authenticated %}
+                            <span>用户：{{ user.昵称 }}</span>
+                        {% else %}
+                            <a class="btn btn-primary" style="color: white;" data-toggle="modal" data-target="#登录框">登录</a><span>&nbsp;或&nbsp;</span>
+                            <a class="btn btn-danger" style="color: white;" href="{% url '注册' %}">注册</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="margin: 0em;padding: 0.5em 1em;" class="card-block form-group">
+                    <form id="评论表单" action="{% url '提交评论' %}" method="POST">
+                        {% csrf_token %}
+                        {% if user.is_authenticated %}
+                            <div id="回复哪条评论或回复" style="display:none;border:  1px solid rgb(209, 209, 209);border-bottom: none;overflow: hidden;background-color: rgb(248, 248, 248)">
+                                <span style="padding-left:2em">回复：</span>
+                                <p style="text-indent:4em;" id="评论内容"></p>
+                            </div>
+                            {{ 评论表单.评论内容 }}
+                            <span id="评论错误信息" class="text-danger pull-left"></span>
+                            <button type="submit" class="btn btn-success pull-right">发表评论</button>
+                        {% else %}
+                            <textarea name="评论内容" cols="40" rows="4" class="form-control" id="id_评论内容" placeholder='请登录后评论' readonly></textarea>
+                            <button type="submit" disabled="disabled" class="btn btn-success  pull-right">发表评论</button>
+                        {% endif %}
+                        {{ 评论表单.对象id }}
+                        {{ 评论表单.内容类型 }}
+                        {{ 评论表单.回复哪条评论或回复_id }}
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <h5>评论列表：</h5>
+                    <div id="评论列表">
+                        {% for 评论 in 评论列表 %}
+                            <div id="评论框_{{ 评论.pk }}" style="color:black;border-bottom: 1px dashed #ccc">
+                                <span style="float:right">
+                                    {{ forloop.revcounter }}楼
+                                </span>
+                                <span>{{ 评论.评论人方法.昵称 }}:</span>
+                                <div id="评论_{{ 评论.pk }}" style="padding-left:2em;">
+                                {{ 评论.评论内容方法|safe }}
+                                </div>
+                                <span>
+                                    {{ 评论.评论时间方法|date:"Y-m-d H:i:s" }}
+                                </span>
+                                <a href="javascript:回复({{ 评论.pk }})">回复</a>
+                                <span style="float:right;cursor:pointer" onclick="点赞与取消(this, '评论类', {{ 评论.pk }})">
+                                    <i class="fa fa-thumbs-o-up {% 点赞按钮状态函数 评论 %}" style="font-size:1.3em;color:green">
+                                    </i>
+                                    &nbsp;：<span class='点赞数'>{{ 评论.被点赞数方法 }}</span>次（点赞数）
+                                </span>
+                                {% for 回复 in 评论.在哪条评论下回复.all %}
+                                <div style="padding-left:2em;">
+                                    <span>{{ 回复.评论人方法.昵称 }}&nbsp;回复</span>
+                                    <span>@{{ 回复.回复哪个用户方法.昵称 }}:</span>
+                                    <div id="评论_{{ 回复.pk }}" style="padding-left:2em;">
+                                    {{ 回复.评论内容方法|safe }}
+                                    </div>
+                                    <span>
+                                        {{ 回复.评论时间方法|date:"Y-m-d H:i:s" }}</span>
+                                    <a href="javascript:回复({{ 回复.pk }})">回复</a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% empty %}
+                            <p id="暂无评论" class="text-center">暂无评论</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block 脚本扩展 %}
+<script type="text/javascript">
+    function 回复(回复哪条评论或回复_id){
+        $("#评论错误信息").text('');
+        $("#回复哪条评论或回复_id").val(回复哪条评论或回复_id);
+        var 评论内容 = $("#评论_" + 回复哪条评论或回复_id).html();
+        $('#评论内容').html(评论内容);
+        $('#回复哪条评论或回复').show();
+        $('html').animate({scrollTop: $('#评论表单').offset().top - 140},300,function(){
+            CKEDITOR.instances['id_评论内容'].focus();
+        });
+    }
+    function 点赞与取消(obj,内容类型,对象id){
+        var 点赞状态 = obj.getElementsByClassName("active").length == 0
+        $.ajax({
+            url: "{% url '点赞与取消' %}",
+            type: 'GET',
+            data: {
+                内容类型:内容类型,
+                对象id:对象id,
+                点赞状态:点赞状态,
+            },
+            cache: false,
+            success: function(data){
+                console.log(data)
+                if(data['状态']=='成功'){
+                    //更新点赞状态
+                    var 点赞按钮 = $(obj.getElementsByClassName("fa-thumbs-o-up"));
+                    if(点赞状态){
+                        点赞按钮.addClass('active');
+                    }else{
+                        点赞按钮.removeClass('active');
+                    }
+                    //更新点赞数
+                    var 点赞数 = $(obj.getElementsByClassName("点赞数"));
+                    点赞数.text(data['点赞总数']);
+                }else{
+                    if(data['code']==400){
+                        $('#登录框').modal('show');
+                    }else{
+                        alert(data['错误信息']);
+                    }
+                }
+            },
+            error: function(xhr){
+                console.log(xhr)
+            },
+        });
+    }
+    $("#评论表单").submit(function(){
+        $("#评论错误信息").text('');
+        if(CKEDITOR.instances['id_评论内容'].document.getBody().getText().trim()==''){
+            $('textarea').attr('placeholder','请评论后提交');
+            $("#评论错误信息").text('请评论后提交');
+            return false;
+        };
+        //更新数据到评论框
+        CKEDITOR.instances['id_评论内容'].updateElement();
+        //异步提交
+        $.ajax({
+            url: "{% url '提交评论' %}",
+            type: 'POST',
+            data: $(this).serialize(),
+            cache: false,
+            success: function(data){
+                console.log(data);
+                if(data['状态']=='成功'){
+                    //异步提交成功后插入数据    
+                    if($("#回复哪条评论或回复_id").val()=='0'){
+                        //插入评论
+                    var 评论_html = '<div id="评论框_' + data['pk'] + '" style="color:black;border-bottom: 1px dashed #ccc"><span style="float:right">你的回复</span><span>' + data['用户名'] + ':</span><div id="评论_' + data['pk'] + '" style="padding-left:2em;">' + data['评论内容'] + '</div><span>' + data['评论时间'] + '</span>&nbsp;<a href="javascript:回复(' + data['pk'] + ')">回复</a><span style="float:right;cursor:pointer" onclick="点赞与取消(this, \'评论类\',' + data['pk'] + ')"><i class="fa fa-thumbs-o-up" style="font-size:1.3em;color:green"></i>&nbsp;：<span class="点赞数">0</span>次（点赞数）</span></div>';
+                    $("#评论列表").prepend(评论_html);
+                    }else{
+                        //插入回复
+                    var 回复_html = '<div style="padding-left:2em;"><span>' + data['用户名'] + '&nbsp;回复</span>&nbsp;<span>@' + data['回复哪个用户'] + ':</span><div id="评论_' + data['pk'] + '" style="padding-left:2em;">' + data['评论内容'] + '</div><span>' + data['评论时间'] + '</span>&nbsp;<a href="javascript:回复(' + data['pk'] + ')">回复</a></div>';
+                    $("#评论框_" + data['pk']).append(回复_html);
+                    }
+                    CKEDITOR.instances['id_评论内容'].setData('');
+                    $('#暂无评论').remove();
+                    $('#回复哪条评论或回复').hide();
+                    $("#回复哪条评论或回复_id").val('0');
+                    $("#评论错误信息").text('评论成功');
+                }else{
+                    $("#评论错误信息").text(data['错误信息']);
+                }
+            },
+            error: function(xhr){
+                console.log(xhr);
+            },
+        });
+        return false;
+    });
+</script>
+{% endblock %}

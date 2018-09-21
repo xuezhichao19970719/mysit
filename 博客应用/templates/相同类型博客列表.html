@@ -1,0 +1,28 @@
+{% extends '博客列表.html' %}
+
+
+{% block 页面标题 %}相同类型博客列表{% endblock %}
+
+
+{% block 卡片标题 %}{{ 博客类型.类型名称方法 }}{% endblock %}
+
+
+{% block 遍历 %}
+    {% for 博客 in 博客列表 %}
+        <div class="博客摘要">
+            <h4 style="display: inline">
+                <a href='{% url '博客内容' 博客.pk %}'>
+                    {{ 博客.标题方法 }}
+                </a>
+            </h4><span style="font-size: 1em；display:block; float:right">阅读量:{{ 博客.阅读计数方法 }}&nbsp;&nbsp;</span>
+            <p>{{ 博客.内容方法|truncatechars_html:50|striptags }}</p>
+        </div>
+    {% empty %}
+        <div class="博客摘要"><h4>暂无博客</h4></div>
+    {% endfor %}
+{% endblock %}
+
+
+{% block 卡片页脚 %}
+    共有类型为 "{{ 博客类型.类型名称方法 }}" 的 {{ 对应博客页面.paginator.count }}篇博客
+{% endblock %}

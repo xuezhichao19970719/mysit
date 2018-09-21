@@ -1,0 +1,127 @@
+ {% extends '模板.html' %}
+
+
+{% block 页面标题 %}
+    我的网站
+{% endblock %}
+
+{% load staticfiles %}
+{% block 引用样式 %}
+    <script src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
+{% endblock %}
+
+
+{% block 选中导航栏首页 %}active bg-info{% endblock %}
+
+
+{% block 内容 %}
+    <h3 style=" 
+    font-size: 250%;
+    text-align: center;
+    margin: 3em 0em 1em 0em;
+    ">
+		欢迎来到我的首页
+	</h3>
+    <div id="container" style="margin: 0 auto;width: 600px;height:400px;"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h4> 昨日阅读热点 </h4>
+                    </div>
+                    <div  style="list-style-type: circle"  class="card-block">
+                        <ul style="margin : 0.5em 0em" class="navbar-btn">
+                            {% for 博客 in 昨日热点博客 %}
+                                <li>
+                                    <a href = '{% url '博客内容' 博客.内容对象方法.pk %}'>
+                                        {{ 博客.内容对象方法.标题方法 }}
+                                    </a>&nbsp;<span>({{ 博客.阅读计数方法 }})</span>
+                                </li>
+                            {% empty %}
+                                <li>昨日暂无热门博客</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div >
+            </div>
+
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h4> 一周阅读热点 </h4>
+                    </div>
+                    <div  style="list-style-type: circle"  class="card-block">
+                        <ul style="margin : 0.5em 0em" class="navbar-btn">
+                            {% for key,value in 一周热点博客字典.items %}
+                                <li>
+                                    <a href = '{% url '博客内容' key.pk %}'>
+                                        {{ key.标题方法 }}
+                                    </a>&nbsp;<span>({{value}})</span>
+                                </li>
+                            {% empty %}
+                                <li>上周暂无热门博客</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div >
+            </div>
+
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h4> 总阅读热点 </h4>
+                    </div>
+                    <div  style="list-style-type: circle"  class="card-block">
+                        <ul style="margin : 0.5em 0em" class="navbar-btn">
+                            {% for 博客 in 总阅读数量排序 %}
+                                <li>
+                                    <a href = '{% url '博客内容' 博客.对象id方法 %}'>
+                                        {{ 博客.内容对象方法.标题方法 }}
+                                    </a>&nbsp;<span>({{ 博客.阅读计数方法 }})</span>
+                                </li>
+                            {% empty %}
+                                <li>暂无热门博客</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div >
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    // 图表配置
+    var options = {
+        chart: {
+            type: 'line' },
+        title: {
+            text: null
+        },
+        xAxis: {
+            categories: {{ 七日日期列表|safe }},
+        },
+        yAxis: {
+            title: {text: null},
+            labels: { enabled:false },
+            gridLineDashStyle: 'Dash'
+        },
+        series: [{
+            name: '周阅读量变化',
+            data: {{ 七日博客阅读量列表 }},
+        }],
+        plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true
+                }
+            }
+        },
+        lagend: { enabled:false },
+        credits: { enabled:false },
+    };
+    // 图表初始化函数
+    var chart = Highcharts.chart('container', options);
+    </script>
+{% endblock %}

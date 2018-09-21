@@ -1,0 +1,87 @@
+{% extends '模板.html' %}
+{% load staticfiles %}
+
+
+{% block 页面标题 %}
+    个人资料
+{% endblock %}
+
+
+{% block 内容 %}
+	{% if user.is_authenticated %}
+		<div class="row justify-content-center">
+			<form class="col-10" action="{% url '个人信息' %}" method="POST">
+				<p>用户名：{{ user.username }}</p>	
+				{% csrf_token %}
+				<div class="form-group">
+					<label class="col-form-label" for="{{ 修改信息表单.新的昵称.label }}">{{ 修改信息表单.新的昵称.label }}：</label>
+					<div class="col-sm-10">{{ 修改信息表单.新的昵称 }}</div>
+					<p class='text-danger'>{{ 修改信息表单.新的昵称.errors.as_text }}</p>
+				</div>
+				<div class="form-group">
+					<label class="col-form-label" for="{{ 修改信息表单.新的邮箱.label }}">{{ 修改信息表单.新的邮箱.label }}：</label>
+					<div class="col-sm-10">{{ 修改信息表单.新的邮箱 }}</div>
+					<p class='text-danger'>{{ 修改信息表单.新的邮箱.errors.as_text }}</p>
+				</div>
+				<div class="form-group">
+					<label class="col-form-label" for="{{ 修改信息表单.验证码.label }}">{{ 修改信息表单.验证码.label }}：</label>
+					<div class="col-sm-10">{{ 修改信息表单.验证码 }}</div>
+					<p class='text-danger'>{{ 修改信息表单.验证码.errors.as_text }}</p>
+				</div>	
+				<p id="邮箱错误信息" style="margin: 0em" class='text-danger'></p>
+				<span class="text-danger pull-left">{{ 注册表单.non_field_errors }}</span>
+				<p>上一次登陆时间：{{ user.last_login|date:'y-m-d H:i:s' }}</p>
+				<a href="{% url '修改密码' %}">修改密码</a>
+				<div class="modal-footer">
+					<button id="发送验证邮件按钮" type="button" class="btn btn-info">发送验证码</button>
+					<button type="submit" class="btn btn-primary">确认</button>
+				</div>
+			</form>
+		</div>
+	{% else %}
+		<script type="text/javascript">
+			window.location.href='/'
+		</script>
+	{% endif %}
+{% endblock %}
+
+{% block 脚本扩展 %}
+	<script type="text/javascript">
+		$("#发送验证邮件按钮").click(function(){
+			var 邮箱 = $('#id_新的邮箱').val()
+			if(邮箱==""){
+				$('#邮箱错误信息').text('*邮箱不能为空');
+				return false;
+			}
+
+			//发送验证码
+			$.ajax({
+				url: "{% url '发送邮件' %}",
+				type: "GET",
+				data:{'邮箱':邮箱},
+				cache: false,
+				success: function(data){
+					if(data['状态']=='成功'){
+						alert('成功发送验证码');
+					}
+				}
+			});
+
+			$(this).addClass('disabled');
+			$(this).attr('disabled',true);
+			var 计时 = 30;
+			$(this).text(计时 + 's')
+			var 间隔 = setInterval(() => {
+				if(计时 <= 0){
+					clearInterval(间隔);
+					$(this).removeClass('disabled');
+					$(this).attr('disabled',false);
+					$(this).text('发送验证码')
+					return false;
+				}
+				计时 --;
+				$(this).text(计时 + 's');
+			},1000);
+		});
+	</script>
+{% endblock %}

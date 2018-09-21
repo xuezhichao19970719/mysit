@@ -1,0 +1,84 @@
+{% extends '模板.html' %}
+{% load staticfiles %}
+
+
+{% block 页面标题 %}
+    我的网站
+{% endblock %}
+
+
+{% block 选中导航栏首页 %}active bg-info{% endblock %}
+
+
+{% block 内容 %}
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-6">
+			<div class="card">
+				<div class="card-header">
+					<h4 style="margin : 0em" class="text-center">忘记密码</h4>
+				</div>
+				<div class="card-block">
+					<form class="col-12" action="{% url '忘记密码' %}" method="POST">
+						{% csrf_token %}
+						{% for 表单 in 忘记密码表单 %}
+						<div class="form-group">
+							<label for="{{ 表单.label }}">{{表单.label}}：</label>
+							{{ 表单 }}
+							<p class='text-danger'>{{ 表单.errors.as_text }}</p>
+						</div>
+						{% endfor %}
+						<span class="text-danger navbar-left">{{ 忘记密码表单.non_field_errors }}</span>
+						<div class="modal-footer">
+							<button id="发送验证邮件按钮" type="button" class="btn btn-info">发送验证码</button>
+							<button type="submit" class="btn btn-primary">确认</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block 脚本扩展 %}
+	<script type="text/javascript">
+		$("#发送验证邮件按钮").click(function(){
+			var 邮箱 = $('#id_邮箱').val()
+			if(邮箱==""){
+				$('#邮箱错误信息').text('*邮箱不能为空');
+				return false;
+			}
+
+			//发送验证码
+			$.ajax({
+				url: "{% url '发送邮件' %}",
+				type: "GET",
+				data:{'邮箱':邮箱},
+				cache: false,
+				success: function(data){
+					if(data['状态']=='成功'){
+						alert('成功发送验证码');
+					}
+				}
+			});
+
+			$(this).addClass('disabled');
+			$(this).attr('disabled',true);
+			var 计时 = 30;
+			$(this).text(计时 + 's')
+			var 间隔 = setInterval(() => {
+				if(计时 <= 0){
+					clearInterval(间隔);
+					$(this).removeClass('disabled');
+					$(this).attr('disabled',false);
+					$(this).text('发送验证码')
+					return false;
+				}
+				计时 --;
+				$(this).text(计时 + 's');
+			},1000);
+		});
+	</script>
+{% endblock %}

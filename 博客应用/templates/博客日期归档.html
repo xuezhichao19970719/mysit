@@ -1,0 +1,28 @@
+{% extends '博客列表.html' %}
+
+
+{% block 页面标题 %}博客日期归档{% endblock %}
+
+
+{% block 卡片标题 %}{{ 博客日期 }}{% endblock %}
+
+
+{% block 遍历 %}
+    {% for 博客 in 博客列表 %}
+        <div class="博客摘要">
+            <h4>
+                <a href='{% url '博客内容' 博客.pk %}'>
+                    {{ 博客.标题方法 }}
+                </a>
+            </h4>
+            <p>{{ 博客.内容方法|truncatechars_html:50|striptags }}</p>
+        </div>
+    {% empty %}
+        <div class="博客摘要"><h4>暂无博客</h4></div>
+    {% endfor %}
+{% endblock %}
+
+
+{% block 卡片页脚 %}
+    共有日期为 "{{ 博客日期 }}" 的 {{ 对应博客页面.paginator.count }}篇博客
+{% endblock %}
