@@ -192,6 +192,7 @@ ADMINS = (
 )
 
 #日志文件
+'''
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -204,7 +205,6 @@ LOGGING = {
             'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
-            'filters': ['special']
         },
     },
     'loggers': {
@@ -220,3 +220,4 @@ LOGGING = {
         },
     },
 }
+'''
