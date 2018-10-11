@@ -19,6 +19,12 @@ sudo service ssh tart
 #ssh登陆
 ssh root@117.43.121.34 -p 22
 
+#启动uwsgi
+uwsgi --ini /home/mysite_uwsgi/mysite.ini
+
+#启动nginx
+service nginx restart
+
 #linux子系统路径
 C:\Users\76736\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc\LocalState\rootfs
 
