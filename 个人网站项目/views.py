@@ -54,6 +54,9 @@ def 首页函数(request):
 	总阅读数量排序 = 计数类.objects.all().order_by('-阅读计数方法')[:5]
 	return render(request,'首页.html',{'七日博客阅读量列表':七日博客阅读量列表,'七日日期列表':七日日期列表,'昨日热点博客':昨日热点博客,'一周热点博客字典':一周热点博客字典,'总阅读数量排序':总阅读数量排序})
 
+def 简历函数(request):
+	return render(request,'简历页面.html')
+
 def 退出登录函数(request):
 	logout(request)
 	return redirect(request.GET.get('from',reverse('首页')))

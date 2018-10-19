@@ -1,0 +1,18 @@
+ {% extends '模板.html' %}
+
+
+{% block 页面标题 %}
+    我的简历
+{% endblock %}
+
+{% block 选中导航栏简历 %}
+    active bg-info
+{% endblock %}
+
+
+{% load staticfiles %}
+
+
+{% block 内容 %}
+    <embed src="{% static '简历.pdf' %}" type="application/pdf" width="100%" height=1200>
+{% endblock %}

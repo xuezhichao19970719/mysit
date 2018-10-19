@@ -33,6 +33,7 @@ urlpatterns = [
     path('修改密码/',views.修改密码函数,name='修改密码'),
     path('忘记密码/',views.忘记密码函数,name='忘记密码'),
     path('发送邮件/',views.发送邮件函数,name='发送邮件'),
+    path('简历/',views.简历函数,name='简历'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

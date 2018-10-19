@@ -48,6 +48,10 @@
                         <a class="nav-link" href="{% url '博客链接列表' %}">
                         <i class="fa fa-pencil-square-o" style="font-size:1.2em"></i> 博客 </a>
                     </li>
+                    <li class="nav-item {% block 选中导航栏简历 %}{% endblock %}">
+                        <a class="nav-link" href="{% url '简历' %}">
+                        <i class="  fa fa-address-card-o" style="font-size:1.2em"></i> 简历 </a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav navbar-right">
                     {% if user.is_authenticated %}

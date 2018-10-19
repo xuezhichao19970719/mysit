@@ -1,7 +1,7 @@
 #进虚拟环境
 cd E:\python笔记
 venv\Scripts\activate
-cd 我的网站
+cd e:\linux笔记\mysite
 
 #开启web服务
 python manage.py runserver
