@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import datetime,random,string,time,threading
 from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib.contenttypes.models import ContentType
@@ -13,6 +14,19 @@ from 阅读统计.models import 计数类,计数信息类
 from 博客应用.models import 博客类
 from .models import 简介类
 from .forms import 登录表单类,注册表单类,修改信息表单类,修改密码表单类,忘记密码表单类
+from .tasks import celery发送邮件
+
+def redis缓存装饰器(key,timeout):
+	def decorator(func):
+		def wrapper(*args, **kw):
+			if cache.has_key(key):
+				data = cache.get(key)
+			else:
+				data = func(*args, **kw)
+				cache.set(key, data, timeout)
+			return data
+		return wrapper
+	return decorator    
 
 def 本周阅读数量函数(内容类型方法):
 	现在时间 = timezone.now().date()
@@ -25,15 +39,17 @@ def 本周阅读数量函数(内容类型方法):
 		七日阅读量列表.append(同一日阅读数量 or 0)
 	return 七日阅读量列表,七日日期列表
 
+#@redis缓存装饰器('昨日热点博客',3600)
 def 昨日热点函数(内容类型方法):
 	昨日日期 = timezone.now().date() - datetime.timedelta(days=1)
 	昨日阅读数量排序 = 计数信息类.objects.filter(内容类型方法=内容类型方法,日期信息方法=昨日日期).order_by('-阅读计数方法')
 	return 昨日阅读数量排序[:5]
 
+#@redis缓存装饰器('一周热点博客字典',3600)
 def 一周热点函数(内容类型方法):
 	现在时间 = timezone.now().date()
 	七日前时间 = 现在时间 - datetime.timedelta(days=7)
-	七日阅读数量排序 = 计数信息类.objects.filter(内容类型方法=内容类型方法,日期信息方法__gte=七日前时间).values('内容类型方法','对象id方法').annotate(一周阅读数量=Sum('阅读计数方法')).order_by('-一周阅读数量')
+	七日阅读数量排序 = 计数信息类.objects.filter(内容类型方法=内容类型方法,日期信息方法__range=(七日前时间,现在时间)).values('内容类型方法','对象id方法').annotate(一周阅读数量=Sum('阅读计数方法')).order_by('-一周阅读数量')
 	一周热点博客字典 = {}
 	for i in 七日阅读数量排序[:5]:
 		博客 = get_object_or_404(博客类,pk=i['对象id方法'])
@@ -45,12 +61,11 @@ def 首页函数(request):
 	七日博客阅读量列表,七日日期列表 = 本周阅读数量函数(内容类型)
 
 	#获取 一周热点函数 缓存数据
-	一周热点博客字典 = cache.get('一周热点博客')
-	if not 一周热点博客字典:
-		一周热点博客字典 =  一周热点函数(内容类型)
-		cache.set('一周热点博客字典',一周热点博客字典,3600)
+	一周热点博客字典 = 一周热点函数(内容类型)
 
+    #获取 昨日热点函数 缓存数据
 	昨日热点博客 = 昨日热点函数(内容类型)
+
 	总阅读数量排序 = 计数类.objects.all().order_by('-阅读计数方法')[:5]
 	return render(request,'首页.html',{'七日博客阅读量列表':七日博客阅读量列表,'七日日期列表':七日日期列表,'昨日热点博客':昨日热点博客,'一周热点博客字典':一周热点博客字典,'总阅读数量排序':总阅读数量排序})
 
@@ -127,8 +142,9 @@ def 发送邮件函数(request):
 		else:
 			request.session['邮箱验证码'] = 邮箱验证码
 			request.session['发送时间'] = 发送时间
-			t = threading.Thread(target=send_mail, args=('邮箱验证','验证码： %s' % 邮箱验证码,'767366925@qq.com',[邮箱]),kwargs={'fail_silently':False,})
-			t.start()
+			celery发送邮件.delay(邮箱验证码,邮箱)
+			# t = threading.Thread(target=send_mail, args=('邮箱验证','验证码： %s' % 邮箱验证码,'767366925@qq.com',[邮箱]),kwargs={'fail_silently':False,})
+			# t.start()
 		data['状态'] = '成功'
 	else:
 		data['状态'] = '错误'

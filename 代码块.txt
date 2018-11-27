@@ -3,6 +3,11 @@ cd E:\python笔记
 venv\Scripts\activate
 cd 我的网站
 
+cd E:\scrapyspider
+env\Scripts\activate
+cd 我的网站
+
+
 #开启web服务
 python manage.py runserver
 

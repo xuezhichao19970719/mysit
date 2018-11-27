@@ -1,0 +1,7 @@
+div.博客摘要:not(:last-child){
+	border-bottom: 1px solid #eee;
+	margin : 0em 0em 0.5em 0em;
+}
+nav#分页器 {
+	margin : 1em 0em 0em 0em;
+}

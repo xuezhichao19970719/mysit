@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'djcelery',
     'ckeditor',
     'ckeditor_uploader',
     '个人网站项目',
@@ -80,7 +82,7 @@ WSGI_APPLICATION = '个人网站项目.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -98,6 +100,7 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+'''
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
@@ -168,12 +171,43 @@ CKEDITOR_CONFIGS = {
 }
 
 #缓存设置
+'''
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': '数据库缓存',
     }
 }
+'''
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/0',
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    },
+}
+
+import djcelery
+djcelery.setup_loader()  
+BROKER_BACKEND = 'redis'
+BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/2'
+# 设置路径让celery能找到tasks文件
+CELERY_IMPORTS = ('个人网站项目.tasks')
+# 设置时区
+CELERY_TIMEZONE = TIME_ZONE
+#防止死锁
+CELERYD_FORCE_EXECV = True
+#并发数
+CELERYD_CONCURRENCY = 4
+#允许重试
+CELERYD_ACKS_LATE =True
+#一个worker最多执行任务数
+CELERYD_MAX_TASKS_PER_CHILD = 100
+#单任务最大运行时间
+CELERY_TASK_TIME_LIMIT = 60
 
 #自定义参数
 
@@ -192,6 +226,7 @@ ADMINS = (
 )
 
 #日志文件
+'''
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -204,7 +239,6 @@ LOGGING = {
             'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
-            'filters': ['special']
         },
     },
     'loggers': {
@@ -220,3 +254,4 @@ LOGGING = {
         },
     },
 }
+'''
